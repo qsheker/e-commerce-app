@@ -2,8 +2,9 @@ spring:
   application:
     name: product-service
 
-  mongodb:
-    uri: mongodb://product_user:product_pass@localhost:27017/productdb?authSource=productdb
+  data:
+    mongodb:
+      uri: mongodb://product_user:product_pass@localhost:27017/productdb?authSource=productdb
 
 
 eureka:
