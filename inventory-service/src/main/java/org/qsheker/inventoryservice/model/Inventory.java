@@ -20,7 +20,7 @@ public class Inventory
     private String skuCode;
 
     @Column(name = "product_id")
-    private Long productId;
+    private String productId;
 
     private Integer quantity;
 }
