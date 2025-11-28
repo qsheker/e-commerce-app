@@ -1,16 +1,10 @@
 package org.qsheker.orderservice.web.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
+import lombok.Data;
 import java.util.List;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 public class OrderRequest {
     private String orderNumber;
     private List<OrderItemRequest> orderItems;
