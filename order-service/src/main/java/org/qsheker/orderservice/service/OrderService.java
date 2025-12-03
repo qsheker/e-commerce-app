@@ -1,8 +1,9 @@
 package org.qsheker.orderservice.service;
 
 
-import org.qsheker.orderservice.web.dto.OrderRequest;
-import org.qsheker.orderservice.web.dto.OrderResponse;
+import org.qsheker.orderservice.web.dto.order.OrderCreateRequestDto;
+import org.qsheker.orderservice.web.dto.order.OrderRequest;
+import org.qsheker.orderservice.web.dto.order.OrderResponse;
 
 import java.util.List;
 
@@ -11,7 +12,7 @@ public interface OrderService {
 
     OrderResponse findOrderById(Long id);
 
-    OrderResponse create(OrderRequest request);
+    OrderResponse create(OrderCreateRequestDto request);
 
     OrderResponse update(Long id,OrderRequest request);
 

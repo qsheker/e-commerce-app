@@ -4,101 +4,121 @@ import org.qsheker.orderservice.models.Order;
 import org.qsheker.orderservice.models.OrderItem;
 import org.qsheker.orderservice.repository.OrderRepository;
 import org.qsheker.orderservice.service.OrderService;
-import org.qsheker.orderservice.web.dto.OrderItemRequest;
-import org.qsheker.orderservice.web.dto.OrderItemResponse;
-import org.qsheker.orderservice.web.dto.OrderRequest;
-import org.qsheker.orderservice.web.dto.OrderResponse;
+import org.qsheker.orderservice.web.dto.inventory.InventoryResponseDto;
+import org.qsheker.orderservice.web.dto.order.OrderCreateRequestDto;
+import org.qsheker.orderservice.web.dto.order.OrderRequest;
+import org.qsheker.orderservice.web.dto.order.OrderResponse;
+import org.qsheker.orderservice.web.mapper.OrderItemRequestMapper;
+import org.qsheker.orderservice.web.mapper.OrderRequestMapper;
+import org.qsheker.orderservice.web.mapper.OrderResponseMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
 
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 @Service
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
+    private final OrderResponseMapper orderResponseMapper;
+    private final OrderRequestMapper orderRequestMapper;
+    private final OrderItemRequestMapper orderItemRequestMapper;
+    private final static String URL_PREFIX = "http://inventory-service";
+    private final WebClient.Builder webClientBuilder;
 
-    public OrderServiceImpl(OrderRepository orderRepository) {
+    public OrderServiceImpl(OrderRepository orderRepository, OrderResponseMapper orderResponseMapper, OrderRequestMapper orderRequestMapper, OrderItemRequestMapper orderItemRequestMapper, WebClient.Builder webClientBuilder)
+    {
         this.orderRepository = orderRepository;
+        this.orderResponseMapper = orderResponseMapper;
+        this.orderRequestMapper = orderRequestMapper;
+        this.orderItemRequestMapper = orderItemRequestMapper;
+        this.webClientBuilder = webClientBuilder;
     }
 
     @Override
-    public List<OrderResponse> findAllOrder() {
+    public List<OrderResponse>  findAllOrder()
+    {
         return orderRepository.findAll().stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+                .map(order -> orderResponseMapper.toDto(order))
+                .toList();
     }
 
     @Override
-    public OrderResponse findOrderById(Long id) {
+    public OrderResponse findOrderById(Long id)
+    {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found with id: " + id));
-        return mapToResponse(order);
+        return orderResponseMapper.toDto(order);
     }
 
     @Override
-    public OrderResponse create(OrderRequest request) {
-        Order order = Order.builder()
-                .orderNumber(request.getOrderNumber())
-                .orderItems(
-                        request.getOrderItems().stream()
-                                .map(this::mapToEntity)
-                                .collect(Collectors.toList())
-                )
+    @Transactional
+    public OrderResponse create(OrderCreateRequestDto request)
+    {
+        List<InventoryResponseDto> fetched = webClientBuilder.build()
+                .patch()
+                .uri(URL_PREFIX+"/api/v1/inventory/batch")
+                .bodyValue(request.getList())
+                .retrieve()
+                .bodyToFlux(InventoryResponseDto.class)
+                .collectList()
+                .block();
+
+        List<OrderItem> orderItems = fetched.stream()
+                .map(inventoryResponseDto ->OrderItem.builder()
+                        .skuCode(inventoryResponseDto.getSkuCode())
+                        .price(inventoryResponseDto.getPrice())
+                        .quantity(inventoryResponseDto.getQuantity())
+                        .build())
+                .toList();
+
+        var uniqueOrderNumber = UUID.randomUUID().toString();
+
+        BigDecimal total = orderItems.stream()
+                .map(item -> item.getPrice()
+                        .multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        var order = Order.builder()
+                .orderItems(orderItems)
+                .orderNumber(uniqueOrderNumber)
+                .total(total)
                 .build();
-        Order savedOrder = orderRepository.save(order);
-        return mapToResponse(savedOrder);
+
+        var result = orderRepository.save(order);
+
+
+        var response = orderResponseMapper.toDto(result);
+
+        response.setTotal(total);
+
+        return response;
     }
 
     @Override
-    public OrderResponse update(Long id, OrderRequest request) {
+    public OrderResponse update(Long id, OrderRequest request)
+    {
         Order existingOrder = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found with id: " + id));
 
-        existingOrder.setOrderNumber(request.getOrderNumber());
         existingOrder.getOrderItems().clear();
-        existingOrder.getOrderItems().addAll(
-                request.getOrderItems().stream()
-                        .map(this::mapToEntity)
-                        .collect(Collectors.toList())
-        );
+
+        for(var item: request.getOrderItems()){
+            existingOrder.addItem(orderItemRequestMapper.toEntity(item));
+        }
 
         Order updatedOrder = orderRepository.save(existingOrder);
-        return mapToResponse(updatedOrder);
+        return orderResponseMapper.toDto(updatedOrder);
     }
 
     @Override
-    public void delete(Long id) {
+    public void delete(Long id)
+    {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found with id: " + id));
         orderRepository.delete(order);
-    }
-
-    private OrderResponse mapToResponse(Order order) {
-        return OrderResponse.builder()
-                .id(order.getId())
-                .orderNumber(order.getOrderNumber())
-                .orderDate(order.getOrderDate())
-                .orderItems(order.getOrderItems().stream()
-                        .map(this::mapToItemResponse)
-                        .collect(Collectors.toList()))
-                .build();
-    }
-
-    private OrderItemResponse mapToItemResponse(OrderItem item) {
-        return OrderItemResponse.builder()
-                .id(item.getId())
-                .skuCode(item.getSkuCode())
-                .price(item.getPrice())
-                .quantity(item.getQuantity())
-                .build();
-    }
-
-    private OrderItem mapToEntity(OrderItemRequest request) {
-        return OrderItem.builder()
-                .skuCode(request.getSkuCode())
-                .price(request.getPrice())
-                .quantity(request.getQuantity())
-                .build();
     }
 }
