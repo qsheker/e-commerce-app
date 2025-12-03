@@ -1,11 +1,11 @@
-package org.qsheker.orderservice.web.dto;
+package org.qsheker.orderservice.web.dto.order;
 
 import lombok.Data;
-import java.math.BigDecimal;
 
 @Data
-public class OrderItemRequest {
+public class OrderItemRequest
+{
     private String skuCode;
-    private BigDecimal price;
+    private String productId;
     private Integer quantity;
 }

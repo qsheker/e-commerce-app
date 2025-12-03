@@ -1,4 +1,4 @@
-package org.qsheker.orderservice.web.dto;
+package org.qsheker.orderservice.web.dto.order;
 
 
 import lombok.Data;
@@ -6,6 +6,5 @@ import java.util.List;
 
 @Data
 public class OrderRequest {
-    private String orderNumber;
     private List<OrderItemRequest> orderItems;
 }

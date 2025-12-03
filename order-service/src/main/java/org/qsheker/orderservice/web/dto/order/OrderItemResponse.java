@@ -1,4 +1,4 @@
-package org.qsheker.orderservice.web.dto;
+package org.qsheker.orderservice.web.dto.order;
 
 import lombok.Data;
 import java.math.BigDecimal;
