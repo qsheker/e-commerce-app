@@ -1,4 +1,12 @@
 package org.qsheker.inventoryservice.web.dto;
 
-public class InventoryBatchRequestDto {
+import lombok.Data;
+
+
+@Data
+public class InventoryBatchRequestDto
+{
+    private String skuCode;
+    private String productId;
+    private Integer quantity;
 }

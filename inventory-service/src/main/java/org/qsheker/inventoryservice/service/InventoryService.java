@@ -1,8 +1,6 @@
 package org.qsheker.inventoryservice.service;
 
-import org.qsheker.inventoryservice.web.dto.InventoryRequestDto;
-import org.qsheker.inventoryservice.web.dto.InventoryResponseDto;
-import org.qsheker.inventoryservice.web.dto.ProductResponseDto;
+import org.qsheker.inventoryservice.web.dto.*;
 
 import java.util.List;
 
@@ -13,4 +11,5 @@ public interface InventoryService
     InventoryResponseDto save(InventoryRequestDto dto);
     InventoryResponseDto doPurchase(Integer quantity,String skuCode);
     List<InventoryResponseDto> getAll();
+    List<InventoryResponseDto> doPurchaseBatch(List<InventoryBatchRequestDto> dtoList);
 }

@@ -13,4 +13,8 @@ public interface ProductService {
     ProductResponse update(String id,ProductRequest request);
 
     void delete(String id);
+
+    ProductResponse getProductById(String id);
+
+    List<ProductResponse> getAllBatch(List<String> ids);
 }

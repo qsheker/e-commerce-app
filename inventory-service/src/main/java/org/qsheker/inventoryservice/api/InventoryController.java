@@ -1,9 +1,7 @@
 package org.qsheker.inventoryservice.api;
 
 import org.qsheker.inventoryservice.service.InventoryService;
-import org.qsheker.inventoryservice.web.dto.InventoryRequestDto;
-import org.qsheker.inventoryservice.web.dto.InventoryResponseDto;
-import org.qsheker.inventoryservice.web.dto.ProductResponseDto;
+import org.qsheker.inventoryservice.web.dto.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,7 +40,7 @@ public class InventoryController
         return inventoryService.save(requestDto);
     }
 
-    @PutMapping("/{sku-code}/{quantity}")
+    @PatchMapping("purchase/{sku-code}/{quantity}")
     @ResponseStatus(HttpStatus.OK)
     public InventoryResponseDto doPurchase(@PathVariable("sku-code") String skuCode, @PathVariable Integer quantity)
     {
@@ -53,5 +51,12 @@ public class InventoryController
     public List<InventoryResponseDto> getAll()
     {
         return inventoryService.getAll();
+    }
+
+    @PatchMapping("/batch")
+    @ResponseStatus(HttpStatus.OK)
+    public List<InventoryResponseDto> doPurchaseBatch(@RequestBody List<InventoryBatchRequestDto> dtoList)
+    {
+        return inventoryService.doPurchaseBatch(dtoList);
     }
 }

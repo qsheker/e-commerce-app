@@ -1,11 +1,13 @@
 spring:
   application:
     name: inventory-service
+
   datasource:
     url: jdbc:postgresql://localhost:5433/inventorydb
     username: inventory_user
     password: inventory_pass
     driver-class-name: org.postgresql.Driver
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -13,6 +15,10 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        jdbc:
+          batch_size: 50
+        order_updates: true
+
   security:
     oauth2:
       resourceserver:

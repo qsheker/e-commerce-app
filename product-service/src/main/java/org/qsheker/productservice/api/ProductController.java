@@ -14,32 +14,51 @@ public class ProductController {
 
     private final ProductService productService;
 
-    public ProductController(ProductService productService) {
+    public ProductController(ProductService productService)
+    {
         this.productService = productService;
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ProductResponse save(@RequestBody ProductRequest request){
+    public ProductResponse save(@RequestBody ProductRequest request)
+    {
         return productService.create(request);
     }
 
-    @PutMapping("{id}")
+    @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ProductResponse update(@PathVariable String id, @RequestBody ProductRequest request){
+    public ProductResponse getById(@PathVariable String id)
+    {
+        return productService.getProductById(id);
+    }
+
+    @PutMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public ProductResponse update(@PathVariable String id, @RequestBody ProductRequest request)
+    {
         return productService.update(id,request);
     }
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<ProductResponse> getAllProducts(){
+    public List<ProductResponse> getAllProducts()
+    {
         return productService.read();
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public void remove(@PathVariable String id){
+    public void remove(@PathVariable String id)
+    {
         productService.delete(id);
+    }
+
+    @PostMapping("/batch")
+    @ResponseStatus(HttpStatus.OK)
+    public List<ProductResponse> getAllBatch(@RequestBody List<String> ids)
+    {
+        return productService.getAllBatch(ids);
     }
 
 }
