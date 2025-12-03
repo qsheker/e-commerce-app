@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,8 +31,14 @@ public class Order {
     @OneToMany(cascade = CascadeType.ALL)
     private List<OrderItem> orderItems = new ArrayList<>();
 
+    private BigDecimal total;
+
     @PrePersist
     public void prePersist(){
         this.orderDate = LocalDateTime.now();
+    }
+    public void addItem(OrderItem item){
+        orderItems.add(item);
+        item.setOrder(this);
     }
 }
