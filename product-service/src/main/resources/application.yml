@@ -6,6 +6,9 @@ spring:
     mongodb:
       uri: mongodb://product_user:product_pass@localhost:27017/productdb?authSource=productdb
 
+server:
+  port: 9091
+
 eureka:
   client:
     service-url:
@@ -13,5 +16,7 @@ eureka:
     fetch-registry: true
     register-with-eureka: true
     enabled: true
-server:
-  port: 9091
+  instance:
+    prefer-ip-address: true
+    ip-address: 127.0.0.1
+    instance-id: ${spring.application.name}:${server.port}
